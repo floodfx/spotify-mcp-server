@@ -198,17 +198,32 @@ A lightweight [Model Context Protocol (MCP)](https://modelcontextprotocol.io) se
 
 ### Prerequisites
 
-- Node.js v16+
+- Node.js v20+ (for local installation) or Docker (for containerized setup)
 - A Spotify Premium account
 - A registered Spotify Developer application
 
 ### Installation
+
+#### Option 1: Local Installation
 
 ```bash
 git clone https://github.com/marcelmarais/spotify-mcp-server.git
 cd spotify-mcp-server
 npm install
 npm run build
+```
+
+#### Option 2: Docker Installation
+
+```bash
+git clone https://github.com/marcelmarais/spotify-mcp-server.git
+cd spotify-mcp-server
+
+# Build the Docker image
+docker build -t spotify-mcp-server .
+
+# Or use docker-compose for easier management
+docker-compose build
 ```
 
 ### Creating a Spotify Developer Application
@@ -246,11 +261,27 @@ Then edit the file with your credentials:
 
 The Spotify API uses OAuth 2.0 for authentication. Follow these steps to authenticate your application:
 
+#### For Local Installation:
+
 1. Run the authentication script:
 
 ```bash
 npm run auth
 ```
+
+#### For Docker Installation:
+
+1. Run the authentication script in a container:
+
+```bash
+# Using docker run
+docker run --rm -it -v $(pwd)/spotify-config.json:/app/spotify-config.json:rw -p 8888:8888 spotify-mcp-server npm run auth
+
+# Or using docker-compose
+docker-compose run --rm --service-ports spotify-mcp npm run auth
+```
+
+#### Authentication Steps (both methods):
 
 2. The script will generate an authorization URL. Open this URL in your web browser.
 
@@ -275,9 +306,45 @@ npm run auth
 
 7. The server will automatically refresh the access token when needed, using the refresh token.
 
+## Running the Server
+
+### Local Installation
+
+After building and authenticating, run the server:
+
+```bash
+node build/index.js
+```
+
+### Docker Installation
+
+After authenticating, run the server in a container:
+
+```bash
+# Using docker run
+docker run -d --name spotify-mcp -v $(pwd)/spotify-config.json:/app/spotify-config.json:ro -p 8888:8888 spotify-mcp-server
+
+# Or using docker-compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f spotify-mcp
+
+# Stop the server
+docker-compose down
+```
+
+**Important Notes for Docker:**
+- The `spotify-config.json` file is mounted as a volume to persist authentication tokens
+- Port 8888 is exposed for the OAuth callback during authentication
+- Use `--network=host` if you encounter callback issues during authentication
+- The server runs as a non-root user for security
+
 ## Integrating with Claude Desktop, Cursor, and VsCode [Via Cline model extension](https://marketplace.visualstudio.com/items/?itemName=saoudrizwan.claude-dev)
 
 To use your MCP server with Claude Desktop, add it to your Claude configuration:
+
+#### For Local Installation:
 
 ```json
 {
@@ -290,10 +357,29 @@ To use your MCP server with Claude Desktop, add it to your Claude configuration:
 }
 ```
 
+#### For Docker Installation:
+
+```json
+{
+  "mcpServers": {
+    "spotify": {
+      "command": "docker",
+      "args": ["run", "--rm", "-v", "$(pwd)/spotify-config.json:/app/spotify-config.json:ro", "spotify-mcp-server"]
+    }
+  }
+}
+```
+
 For Cursor, go to the MCP tab in `Cursor Settings` (command + shift + J). Add a server with this command:
 
+#### Local Installation:
 ```bash
 node path/to/spotify-mcp-server/build/index.js
+```
+
+#### Docker Installation:
+```bash
+docker run --rm -v $(pwd)/spotify-config.json:/app/spotify-config.json:ro spotify-mcp-server
 ```
 
 To set up your MCP correctly with Cline ensure you have the following file configuration set `cline_mcp_settings.json`:
