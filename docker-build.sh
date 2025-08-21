@@ -5,6 +5,7 @@
 set -e
 
 echo "Building Spotify MCP Server Docker image..."
+echo "Note: This will use 'npm install' since package-lock.json is not committed"
 docker build -t spotify-mcp-server .
 
 echo "Docker image built successfully!"

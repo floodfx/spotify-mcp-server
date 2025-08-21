@@ -4,7 +4,7 @@ This document provides a quick reference for running the Spotify MCP Server in D
 
 ## Files Added
 
-- **Dockerfile** - Multi-stage build with Node.js 20 Alpine, security-focused with non-root user
+- **Dockerfile** - Multi-stage build with Node.js 20 Alpine, security-focused with non-root user, handles missing package-lock.json gracefully
 - **.dockerignore** - Excludes unnecessary files from Docker build context
 - **docker-compose.yml** - Easy orchestration with volume mounting for config
 - **docker-build.sh** - Convenience script for building the Docker image
